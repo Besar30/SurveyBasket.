@@ -1,20 +1,27 @@
 ﻿using Mapster;
 using MapsterMapper;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
+using SurveyBasket.api.Auuthentication;
 using SurveyBasket.api.Services;
 using System.Reflection;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 namespace SurveyBasket.api
 {
     public static class DependancyInjection
     {
-        public static IServiceCollection AddDependecies(this IServiceCollection services)
+        public static IServiceCollection AddDependecies(this IServiceCollection services,IConfiguration configuration)
         {
 
            services.AddControllers();
             services.AddSwaggerservices()
             .AddMaperster()
             .AddFluentValidation();
+            services.AddAuthentication(configuration);
 
             services.AddScoped<Ipollservices, pollservices>();
+            services.AddScoped<IAuthServices, AuthServices>();
             return services;
         }
         public static IServiceCollection AddSwaggerservices(this IServiceCollection services)
@@ -37,10 +44,43 @@ namespace SurveyBasket.api
         public static IServiceCollection AddFluentValidation(this IServiceCollection services)
         {
 
-
             services
                .AddFluentValidationAutoValidation()
                .AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
+            return services;
+        }
+        public static IServiceCollection AddAuthentication(this IServiceCollection services,IConfiguration configuration)
+        {
+            var JwtSetting=configuration.GetSection(JwtOptions.SectionName).Get<JwtOptions>();
+            services.AddOptions<JwtOptions>()
+                .BindConfiguration(JwtOptions.SectionName)
+                .ValidateDataAnnotations()
+                .ValidateOnStart();
+            services.AddSingleton<IJwtProvider, JwtProvider>();
+            services.AddIdentity<ApplicationUser, IdentityRole>()
+             .AddEntityFrameworkStores<ApplicationDbContext>();
+
+            //services.Configure<JwtOptions>(configuration.GetSection(JwtOptions.SectionName));
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            }
+            ).AddJwtBearer(o =>
+            {
+                o.SaveToken = true;
+                o.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(JwtSetting?.Key!)),
+                    ValidIssuer = JwtSetting?.issuer,
+                    ValidAudience = JwtSetting?.audience
+                };
+
+            });
             return services;
         }
     }

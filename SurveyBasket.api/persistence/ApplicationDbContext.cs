@@ -1,9 +1,17 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿
+using System.Reflection;
 
-namespace SurveyBasket.api.persistence
+public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 {
-    public class ApplicationDbContext: DbContext
+    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
     {
+    }
 
+    public DbSet<Poll> Polls { get; set; }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+        base.OnModelCreating(modelBuilder);
     }
 }

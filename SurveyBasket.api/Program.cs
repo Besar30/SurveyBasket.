@@ -1,32 +1,19 @@
-using FluentValidation.AspNetCore;
-using Mapster;
-using MapsterMapper;
-using Microsoft.EntityFrameworkCore;
 using SurveyBasket.api;
-using SurveyBasket.api.persistence;
-
 
 var builder = WebApplication.CreateBuilder(args);
-
 // Add services to the container.
-
-builder.Services.AddDependecies();
-var app = builder.Build();
-//database
 var connectionstring = builder.Configuration.GetConnectionString("DefaultConnection");
-builder.Services.AddDbContext<ApplicationDbContext>(options=>options.UseSqlServer(connectionstring));
-//enddatabase
+builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(connectionstring));
+builder.Services.AddDependecies(builder.Configuration);
+var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
 app.UseHttpsRedirection();
-
+app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
-
 app.Run();
