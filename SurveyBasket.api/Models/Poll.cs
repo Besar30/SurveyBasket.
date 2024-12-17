@@ -1,6 +1,6 @@
 ﻿namespace SurveyBasket.api.Models
 {
-    public sealed class Poll
+    public sealed class Poll: AutibaleEntity
     {
         public int Id { get; set; }
         public string Title { get; set; }= string.Empty;

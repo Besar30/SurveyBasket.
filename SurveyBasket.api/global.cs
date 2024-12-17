@@ -15,3 +15,5 @@ global using SurveyBasket.api.Auuthentication;
 global using SurveyBasket.api.Services;
 global using System.Reflection;
 global using System.Text;
+global using Microsoft.AspNetCore.Authorization;
+global using SurveyBasket.api.contracts.polls;

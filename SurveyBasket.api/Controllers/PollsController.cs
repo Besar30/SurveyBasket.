@@ -1,17 +1,14 @@
-﻿using Mapster;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
-using SurveyBasket.api.contracts.polls;
-using SurveyBasket.api.Services;
+﻿
 namespace SurveyBasket.api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class PollsController(Ipollservices pollservices) : ControllerBase
     {
         private readonly Ipollservices _pollservices= pollservices;
         [HttpGet("")]
-        [Authorize]
+        
         public async Task< IActionResult> GetAll(CancellationToken cancellationToken = default)
         {
             var polls= await _pollservices.GetallAsync(cancellationToken);
@@ -33,7 +30,7 @@ namespace SurveyBasket.api.Controllers
         public async Task< IActionResult> add([FromBody] Createpollrequest request,CancellationToken cancellationToken=default)
         {
             var newpoll = await _pollservices.addasync(request.Adapt<Poll>(), cancellationToken);
-            return CreatedAtAction(nameof(GetByid), new { id = newpoll.Id }, newpoll);
+            return CreatedAtAction(nameof(GetByid), new { id = newpoll.Id }, newpoll.Adapt<CreatePollRespons>());
         }
 
         [HttpPut("{id}")]
