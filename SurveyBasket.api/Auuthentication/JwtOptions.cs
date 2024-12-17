@@ -8,11 +8,10 @@ namespace SurveyBasket.api.Auuthentication
         [Required]
         public string Key { get; init; }=string.Empty;
         [Required]
-        public string issuer { get; init; }=string.Empty ;
+        public string Issuer { get; init; }=string.Empty ;
         [Required]
-        public string audience { get; init; } = string.Empty;
+        public string Audience { get; init; } = string.Empty;
         [Range(1,int.MaxValue),]
         public int ExpiryMinutes { get; init; }
-
     }
 }

@@ -1,12 +1,6 @@
-﻿using Mapster;
-using MapsterMapper;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Identity;
-using SurveyBasket.api.Auuthentication;
-using SurveyBasket.api.Services;
-using System.Reflection;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
+﻿
+
+
 namespace SurveyBasket.api
 {
     public static class DependancyInjection
@@ -51,11 +45,14 @@ namespace SurveyBasket.api
         }
         public static IServiceCollection AddAuthentication(this IServiceCollection services,IConfiguration configuration)
         {
+
             var JwtSetting=configuration.GetSection(JwtOptions.SectionName).Get<JwtOptions>();
+
             services.AddOptions<JwtOptions>()
                 .BindConfiguration(JwtOptions.SectionName)
                 .ValidateDataAnnotations()
                 .ValidateOnStart();
+
             services.AddSingleton<IJwtProvider, JwtProvider>();
             services.AddIdentity<ApplicationUser, IdentityRole>()
              .AddEntityFrameworkStores<ApplicationDbContext>();
@@ -76,8 +73,8 @@ namespace SurveyBasket.api
                     ValidateAudience = true,
                     ValidateLifetime = true,
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(JwtSetting?.Key!)),
-                    ValidIssuer = JwtSetting?.issuer,
-                    ValidAudience = JwtSetting?.audience
+                    ValidIssuer = JwtSetting?.Issuer,
+                    ValidAudience = JwtSetting?.Audience
                 };
 
             });

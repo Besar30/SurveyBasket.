@@ -1,6 +1,4 @@
-﻿
-using Microsoft.EntityFrameworkCore.Diagnostics;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -23,16 +21,38 @@ namespace SurveyBasket.api.Auuthentication
                 ];
             var symmetricsecurityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_options.Key)); 
             var signingCredentials=new SigningCredentials(symmetricsecurityKey,SecurityAlgorithms.HmacSha256);
-
-            
             var token = new JwtSecurityToken(
-                issuer: _options.issuer,
-                audience: _options.audience,
+                issuer: _options.Issuer,
+                audience: _options.Audience,
                 claims: claims,
                 expires: DateTime.UtcNow.AddMinutes(_options.ExpiryMinutes),
                 signingCredentials: signingCredentials
                 );
             return (token: new JwtSecurityTokenHandler().WriteToken(token), expiresIN: (_options.ExpiryMinutes*60));
+        }
+
+        public string? validationToken(string token)
+        {
+            var tokenHandler =new JwtSecurityTokenHandler();
+            var symmetricsecurityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_options.Key));
+            try
+            {
+                tokenHandler.ValidateToken(token, new TokenValidationParameters
+                {
+                    IssuerSigningKey = symmetricsecurityKey,
+                    ValidateIssuerSigningKey = true,
+                    ValidateIssuer = false,
+                    ValidateAudience = false,
+                    ClockSkew = TimeSpan.Zero
+                }, out SecurityToken validatedToken);
+                var jwttoken = (JwtSecurityToken)validatedToken;
+                return jwttoken.Claims.First(x=>x.Type==JwtRegisteredClaimNames.Sub).Value;
+            }
+            catch
+            {
+                return null;
+
+            }
         }
     }
 }

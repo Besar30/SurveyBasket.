@@ -6,8 +6,9 @@
         string FristName,
         string LastName,
         string Token,
-        int ExpirestIn
-        
+        int ExpirestIn,
+        string RefreshToken,
+        DateTime RefreshTokenExpiration
         );
  
 }
