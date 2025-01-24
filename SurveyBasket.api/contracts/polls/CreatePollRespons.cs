@@ -1,7 +1,7 @@
 ﻿namespace SurveyBasket.api.contracts.polls
 {
     public record CreatePollRespons(
-        int id,
+       int Id,
         string Title,
           string Summary,
            bool IsPublished,

@@ -17,3 +17,4 @@ global using System.Reflection;
 global using System.Text;
 global using Microsoft.AspNetCore.Authorization;
 global using SurveyBasket.api.contracts.polls;
+global using SurveyBasket.api.Abstraction;

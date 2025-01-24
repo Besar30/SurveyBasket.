@@ -1,5 +1,6 @@
 ﻿
 using Microsoft.AspNetCore.Http.HttpResults;
+using SurveyBasket.api.Errors;
 using SurveyBasket.api.Models;
 
 namespace SurveyBasket.api.Services
@@ -8,53 +9,55 @@ namespace SurveyBasket.api.Services
     {
        private readonly ApplicationDbContext _context=context;
         public async Task< IEnumerable<Poll>> GetallAsync(CancellationToken cancellationToken = default) => await _context.Polls.AsNoTracking().ToListAsync(cancellationToken);
-   
-        public async Task<Poll?> Getasync(int id,CancellationToken cancellationToken = default) => await _context.Polls.FindAsync(id,cancellationToken);
 
-        public async Task<Poll> addasync(Poll poll,CancellationToken cancellationToken = default)
+        public async Task<Result<CreatePollRespons>> Getasync(int id, CancellationToken cancellationToken = default)
         {
-           
-             await _context.Polls.AddAsync(poll,cancellationToken);
+            var poll = await _context.Polls.FindAsync(id, cancellationToken);
+             return poll is not null ?
+                Result.Success(poll.Adapt<CreatePollRespons>()) :
+                Result.Failure<CreatePollRespons>(PollsErrors.PollNotFound);
+        }
+        public async Task<CreatePollRespons> addasync(Createpollrequest request, CancellationToken cancellationToken = default)
+        {
+            var poll = request.Adapt<Poll>();
+            await _context.Polls.AddAsync(poll, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
-            return poll;
+            return request.Adapt<CreatePollRespons>();
         }
 
-        public async Task< bool> updateasync(int id, Poll poll, CancellationToken cancellationToken = default)
+        public async Task<Result> updateasync(int id, Createpollrequest poll, CancellationToken cancellationToken = default)
         {
-            var updated = await Getasync(id,cancellationToken);
+            var updated = await _context.Polls.FindAsync(id, cancellationToken);
             if (updated == null)
             {
-                return false;
+                return Result.Failure(PollsErrors.PollNotFound);
             }
             updated.Title = poll.Title;
             updated.Summary = poll.Summary;
             updated.StartsAt = poll.StartsAt;
             updated.EndsAt = poll.EndsAt;
             await _context.SaveChangesAsync(cancellationToken);
-            return true;
+            return Result.Success();
         }
 
-        public async Task< bool> deleteasync(int id,CancellationToken cancellationToken=default)
+        public async Task<Result> deleteasync(int id, CancellationToken cancellationToken = default)
         {
-            var poll =await Getasync(id,cancellationToken);
-            if (poll == null)
-            {
-                return false;
-            }
-            _context.Remove(poll);
+            var poll = await _context.Polls.FindAsync(id,cancellationToken);
+            if(poll==null)return Result.Failure(PollsErrors.PollNotFound);
+             _context.Polls.Remove(poll);
             await _context.SaveChangesAsync(cancellationToken);
-            return true;
+            return Result.Success();
         }
-        public async Task<bool> togglepublishstatusasync(int id, CancellationToken cancellationToken = default)
+        public async Task<Result> togglepublishstatusasync(int id, CancellationToken cancellationToken = default)
         {
-            var poll = await Getasync(id, cancellationToken);
+            var poll = await _context.Polls.FindAsync(id, cancellationToken);
             if (poll == null)
             {
-                return false;
+                return Result.Failure(PollsErrors.PollNotFound);
             }
             poll.IsPublished = !poll.IsPublished;
             await _context.SaveChangesAsync(cancellationToken);
-            return true;
+            return Result.Success();
         }
     }
 }

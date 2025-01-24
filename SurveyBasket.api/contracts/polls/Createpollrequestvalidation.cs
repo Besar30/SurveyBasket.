@@ -1,22 +1,36 @@
 ﻿using FluentValidation;
+using Microsoft.EntityFrameworkCore;
+using System;
 
 namespace SurveyBasket.api.contracts.polls
 {
     public class Createpollrequestvalidation : AbstractValidator<Createpollrequest>
     {
-        public Createpollrequestvalidation()
-        {
-            RuleFor(x => x.Title).NotEmpty()
-                .Length(3, 100).
-                WithMessage("plese enter string betwwen 3 and 100 , included");
-            RuleFor(x => x.StartsAt).NotEmpty().GreaterThanOrEqualTo(DateOnly.FromDateTime(DateTime.Today));
-            RuleFor(x => x.EndsAt).NotEmpty();
-            RuleFor(x => x).Must(hasvalidate)
-                .WithName(nameof(Createpollrequest.EndsAt))
-                .WithMessage("{PropertyName} must greater than startAt");
+        private readonly ApplicationDbContext _context; // Inject DbContext
 
+        public Createpollrequestvalidation(ApplicationDbContext context)
+        {
+            _context = context;
+
+            RuleFor(x => x.Title)
+                .NotEmpty()
+                .Length(3, 100)
+                .WithMessage("Please enter a string between 3 and 100 characters, inclusive.");
+               
+               
+
+            RuleFor(x => x.StartsAt)
+                .NotEmpty()
+                .GreaterThanOrEqualTo(DateOnly.FromDateTime(DateTime.Today));
+
+            RuleFor(x => x.EndsAt).NotEmpty();
+
+            RuleFor(x => x)
+                .Must(HasValidate)
+                .WithName(nameof(Createpollrequest.EndsAt))
+                .WithMessage("{PropertyName} must be greater than StartsAt.");
         }
-        private bool hasvalidate(Createpollrequest poll)
+        private bool HasValidate(Createpollrequest poll)
         {
             return poll.EndsAt >= poll.StartsAt;
         }

@@ -1,5 +1,4 @@
-﻿
-
+﻿using SurveyBasket.api.Errors;
 
 namespace SurveyBasket.api
 {
@@ -9,6 +8,15 @@ namespace SurveyBasket.api
         {
 
            services.AddControllers();
+            //cores
+            services.AddCors(options =>
+            options.AddDefaultPolicy(
+                 builder =>
+                    builder.AllowAnyHeader().
+                            AllowAnyMethod().
+                            WithOrigins(configuration.GetSection("AllowOrigins").Get<string[]>()!)
+                )
+            );
             services.AddSwaggerservices()
             .AddMaperster()
             .AddFluentValidation();
@@ -16,6 +24,10 @@ namespace SurveyBasket.api
 
             services.AddScoped<Ipollservices, pollservices>();
             services.AddScoped<IAuthServices, AuthServices>();
+
+            //excitpion
+            services.AddExceptionHandler<GlobalExciptionHandler>();
+            services.AddProblemDetails();
             return services;
         }
         public static IServiceCollection AddSwaggerservices(this IServiceCollection services)
